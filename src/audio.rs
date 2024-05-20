@@ -1,15 +1,13 @@
 use std::collections::HashMap;
-use std::ffi::OsString;
 use std::fs;
 use std::fs::File;
 use std::io::{BufReader};
 use std::path::PathBuf;
-use std::thread::sleep;
-use std::time::Duration;
-use log::{debug, info};
-use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
+use log::info;
+use rodio::{Decoder, OutputStream, Sink};
 
-#[derive(Debug)]
+static AUDIO_DIR: &str = "audio";
+
 pub struct Records {
     all: HashMap<String, PathBuf>,
 }
@@ -24,7 +22,7 @@ impl Records {
 
     pub fn init(&mut self) {
         info!("Loading all audio files...");
-        fs::read_dir("audio").unwrap().for_each(|entry| {
+        fs::read_dir(AUDIO_DIR).unwrap().for_each(|entry| {
             let entry = entry.unwrap();
             if let Ok(file_type) = entry.file_type() {
                 if file_type.is_file() {
@@ -41,7 +39,7 @@ impl Records {
     }
 
     pub fn play(&self, name: &str) {
-        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+        let (_stream, stream_handle) = &OutputStream::try_default().unwrap();
         let path = self.all.get(&String::from(name)).unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
 
