@@ -20,16 +20,22 @@ impl Records {
        records
     }
 
-    pub fn init(&mut self) {
+    pub fn init() -> Result<Records, String> {
+        let mut records = Records::new();
         info!("Loading all audio files...");
-        fs::read_dir(AUDIO_DIR).unwrap().for_each(|entry| {
-            let entry = entry.unwrap();
-            if let Ok(file_type) = entry.file_type() {
-                if file_type.is_file() {
-                    self.add(&entry.path());
+
+        match fs::read_dir(AUDIO_DIR) {
+            Ok(readDir) => readDir.for_each(|entry| {
+                let entry = entry.unwrap();
+                if let Ok(file_type) = entry.file_type() {
+                    if file_type.is_file() {
+                        records.add(&entry.path());
+                    }
                 }
-            }
-        });
+            }),
+            Err(e) => return Err(format!("{}: {}", e.to_string(), AUDIO_DIR)),
+        };
+        Ok(records)
     }
 
     fn add(& mut self, path: &PathBuf) {
