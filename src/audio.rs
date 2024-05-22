@@ -38,9 +38,12 @@ impl Records {
         println!("{:?}", self.all);
     }
 
-    pub fn play(&self, name: &str) {
+    pub fn play(&self, name: &str) -> Result<(), String>{
         let (_stream, stream_handle) = &OutputStream::try_default().unwrap();
-        let path = self.all.get(&String::from(name)).unwrap();
+        let path = match self.all.get(&String::from(name)) {
+            Some(val) => val,
+            None => return Err(format!("No audio file with such name: {}.", name)),
+        };
         let sink = Sink::try_new(&stream_handle).unwrap();
 
         let file = BufReader::new(File::open(path).unwrap());
@@ -49,5 +52,6 @@ impl Records {
 
         sink.play();
         sink.sleep_until_end();
+        Ok(())
     }
 }
