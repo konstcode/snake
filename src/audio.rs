@@ -1,63 +1,87 @@
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::fs;
 use std::fs::File;
 use std::io::{BufReader};
-use std::path::PathBuf;
-use log::info;
-use rodio::{Decoder, OutputStream, Sink};
+use std::path::{Path, PathBuf};
+use log::{error, info};
+use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
 
-static AUDIO_DIR: &str = "audio";
+/// This simple audio system with adjustable amount of sinks,
+/// took basic idea from rust_audio crate.
+const MAX_CHANNELS: usize = 4;
 
-pub struct Records {
-    all: HashMap<String, PathBuf>,
+pub struct Audio {
+    tracks: HashMap<String, PathBuf>,
+    sinks: Vec<Sink>,
+    current: usize,
+    stream: Option<(OutputStream, OutputStreamHandle)>,
 }
 
-impl Records {
+impl Audio {
     pub fn new() -> Self {
-       let records = Records {
-           all: HashMap::new(),
-       };
-       records
+       if let Ok(stream) = OutputStream::try_default() {
+           let mut sinks: Vec<Sink> = Vec::new();
+           for _ in 0..MAX_CHANNELS {
+               let sink = Sink::try_new(&stream.1).unwrap_or_else(|_| {
+                   panic!("Can't create audio channel.")
+               });
+               sinks.push(sink);
+           }
+           Self {
+               tracks: HashMap::new(),
+               sinks: sinks,
+               stream: Some(stream),
+               current: 0,
+           }
+       }
+       else {
+           Self {
+               tracks: HashMap::new(),
+               sinks: Vec::new(),
+               current: 0,
+               stream: None,
+           }
+       }
     }
 
-    pub fn init() -> Result<Records, String> {
-        let mut records = Records::new();
+    pub fn init<P: AsRef<Path> + Display>(&mut self, audio_dir: P) {
         info!("Loading all audio files...");
 
-        match fs::read_dir(AUDIO_DIR) {
-            Ok(readDir) => readDir.for_each(|entry| {
+        match fs::read_dir(&audio_dir) {
+            Ok(read_dir) => read_dir.for_each(|entry| {
                 let entry = entry.unwrap();
+                let path: PathBuf = entry.path();
                 if let Ok(file_type) = entry.file_type() {
                     if file_type.is_file() {
-                        records.add(&entry.path());
+                        self.add(path);
                     }
                 }
             }),
-            Err(e) => return Err(format!("{}: {}", e.to_string(), AUDIO_DIR)),
+            Err(e) => error!("{}", format!("{}: {}", e.to_string(), audio_dir)),
         };
-        Ok(records)
     }
 
-    fn add(& mut self, path: &PathBuf) {
-        let string = path.file_stem().unwrap().to_str().unwrap();
-        self.all.insert(String::from(string), path.to_owned());
-        println!("{:?}", self.all);
+    fn add(&mut self, path: PathBuf) {
+        let string = String::from(path.file_stem().unwrap().to_str().unwrap());
+        self.tracks.insert(string, path);
     }
 
-    pub fn play(&self, name: &str) -> Result<(), String>{
-        let (_stream, stream_handle) = &OutputStream::try_default().unwrap();
-        let path = match self.all.get(&String::from(name)) {
+    pub fn play<S: AsRef<str>>(&mut self, name: S) {
+        let path = match self.tracks.get(name.as_ref()) {
             Some(val) => val,
-            None => return Err(format!("No audio file with such name: {}.", name)),
+            None => { error!("{}", format!("No audio file with such name: {}.", name.as_ref())); return },
         };
-        let sink = Sink::try_new(&stream_handle).unwrap();
 
         let file = BufReader::new(File::open(path).unwrap());
         let source = Decoder::new(file).unwrap();
-        sink.append(source);
+        println!("before current sink: {}", self.current);
+        let current_sink = &self.sinks[self.current];
 
-        sink.play();
-        sink.sleep_until_end();
-        Ok(())
+        if (self.current < MAX_CHANNELS - 1) { self.current += 1; } else { self.current = 0 }
+        println!("current sink: {}", self.current);
+
+        current_sink.append(source);
+        current_sink.play();
     }
 }
