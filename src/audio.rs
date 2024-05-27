@@ -93,14 +93,28 @@ impl Audio {
         current_sink.append(source);
         current_sink.play();
     }
+
+    pub fn wait(&self) {
+        if self.disabled() {
+            return;
+        }
+        loop {
+            if self.sinks.iter().any(|i| !i.empty()) {
+                std::thread::sleep(std::time::Duration::from_millis(50));
+                continue;
+            }
+            break;
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::time::Instant;
     use super::*;
 
     #[test]
-    fn check_audio_new() {
+    fn test_audio_new() {
         let audio = Audio::new();
         assert_eq!(audio.sinks.len(), MAX_CHANNELS, "Sinks same number as channels defined.");
         assert!(audio.stream.is_some(), "Audio device connected.");
@@ -108,7 +122,7 @@ mod tests {
     }
 
     #[test]
-    fn check_audio_initialization_and_add() {
+    fn test_audio_initialization_and_add() {
         let mut audio = Audio::new();
         audio.add(PathBuf::from("audio/win.wav"));
         assert_eq!(audio.tracks.len(), 1, "Have correct number of tracks");
@@ -127,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    fn check_play() {
+    fn test_play() {
         let mut audio = Audio::new();
         audio.init("audio");
         assert!(audio.sinks[0].empty(), "First sink is empty at start.");
@@ -139,4 +153,16 @@ mod tests {
         }
         assert_eq!(audio.current, 0, "After play from all channels, current become 0.");
     }
+
+    #[test]
+    fn test_wait () {
+        let mut audio = Audio::new();
+        audio.init("audio");
+        let start = Instant::now();
+        audio.play("win");
+        audio.wait();
+        let duration = start.elapsed();
+        assert!(duration.as_millis() > 200);
+    }
+
 }
