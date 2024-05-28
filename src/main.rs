@@ -11,8 +11,9 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use snake::audio::Audio;
-use snake::frame::{Frame, new_frame};
+use snake::frame::{Drawable, Frame, new_frame};
 use snake::render;
+use snake::snake::Snake;
 
 static AUDIO_DIR: &str = "audio";
 
@@ -44,6 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Gameloop
     let mut instant = Instant::now();
+    let mut snake = Snake::new();
 
     'gameloop: loop {
         // Per-frame init
@@ -64,6 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
+        snake.draw(&mut curr_frame);
         render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
         continue;
