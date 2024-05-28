@@ -56,6 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Esc | KeyCode::Char('q') => {
+                        audio.play("win");
                         break 'gameloop;
                     },
                     _ => {}
@@ -63,10 +64,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
+        render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
         continue;
     }
-
 
     // Cleanup
     drop(render_tx);
