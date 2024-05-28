@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
-use std::fs::File;
 use std::io::{BufReader};
 use std::path::{Path, PathBuf};
 use log::{error, info};
@@ -83,7 +82,7 @@ impl Audio {
             None => { error!("{}", format!("No audio file with such name: {}.", name.as_ref())); return },
         };
 
-        let file = BufReader::new(File::open(path).unwrap());
+        let file = BufReader::new(fs::File::open(path).unwrap());
         let source = Decoder::new(file).unwrap();
         let current_sink = &self.sinks[self.current];
 
@@ -164,5 +163,4 @@ mod tests {
         let duration = start.elapsed();
         assert!(duration.as_millis() > 200);
     }
-
 }
