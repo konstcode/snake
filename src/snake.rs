@@ -3,8 +3,15 @@ use crate::frame::{Drawable, Frame};
 pub struct Snake {
     head: Section,
     tail: Vec<Section>,
+    direction: Direction,
 }
 
+enum Direction {
+    Left,
+    Top,
+    Right,
+    Down
+}
 struct Section (usize, usize);
 
 impl Snake {
@@ -16,12 +23,23 @@ impl Snake {
         Self {
             head: head,
             tail: tail,
+            direction: Direction::Right
         }
+    }
+
+    pub fn turn_left() {
+
     }
 }
 impl Drawable for Snake {
     fn draw(&self, frame: &mut Frame) {
-        frame[self.head.0][self.head.1] = '>';
+        let head_char = match self.direction {
+            Direction::Left => '⇐',
+            Direction::Top => '⇑',
+            Direction::Right => '⇒',
+            Direction::Down => '⇓',
+        };
+        frame[self.head.0][self.head.1] = head_char;
         for s in &self.tail {
             frame[s.0][s.1] = 'X';
         }
