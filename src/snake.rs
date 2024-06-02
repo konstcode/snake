@@ -10,26 +10,26 @@ enum Direction {
     Left,
     Top,
     Right,
-    Down
+    Down,
 }
-struct Section (usize, usize);
+struct Section(usize, usize);
 
 impl Snake {
-    pub fn new()  -> Self {
+    pub fn new() -> Self {
         let head = Section(20, 20);
-        let tail = vec![Section(head.0 - 1, head.1),
-                                     Section(head.0 - 2, head.1),
-                                     Section(head.0 - 3, head.1)];
+        let tail = vec![
+            Section(head.0 - 1, head.1),
+            Section(head.0 - 2, head.1),
+            Section(head.0 - 3, head.1),
+        ];
         Self {
             head: head,
             tail: tail,
-            direction: Direction::Right
+            direction: Direction::Right,
         }
     }
 
-    pub fn turn_left() {
-
-    }
+    pub fn turn_left() {}
 }
 impl Drawable for Snake {
     fn draw(&self, frame: &mut Frame) {
@@ -45,3 +45,4 @@ impl Drawable for Snake {
         }
     }
 }
+

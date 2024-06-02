@@ -1,19 +1,21 @@
-use std::{ error::Error,
-   sync::mpsc::{ self, Receiver },
-   io,
-   thread,
-   time::{Duration, Instant},
-};
 use crossterm::{
     cursor::{Hide, Show},
-    event, ExecutableCommand,
+    event,
     event::{Event, KeyCode},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
 use snake::audio::Audio;
-use snake::frame::{Drawable, Frame, new_frame};
+use snake::frame::{new_frame, Drawable, Frame};
 use snake::render;
 use snake::snake::Snake;
+use std::{
+    error::Error,
+    io,
+    sync::mpsc::{self, Receiver},
+    thread,
+    time::{Duration, Instant},
+};
 
 static AUDIO_DIR: &str = "audio";
 
@@ -53,14 +55,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         instant = Instant::now();
         let mut curr_frame = new_frame();
 
-          // Input handlers for the game
+        // Input handlers for the game
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("win");
                         break 'gameloop;
-                    },
+                    }
                     _ => {}
                 }
             }
