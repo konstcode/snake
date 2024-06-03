@@ -68,6 +68,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
+        snake.update(delta);
         snake.draw(&mut curr_frame);
         render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
