@@ -15,6 +15,7 @@ pub struct Snake {
     alive: bool,
 }
 
+#[derive(PartialEq, Copy, Clone)]
 pub enum Direction {
     Left,
     Top,
@@ -79,7 +80,16 @@ impl Snake {
         !self.alive
     }
 
-    pub fn turn_if_possible(&self, dirrection: Direction) {}
+    // TODO: maybe try to improve this condition
+    pub fn turn_if_possible(&mut self, new_dirrection: Direction) {
+        self.direction = match (self.direction, new_dirrection) {
+            (Direction::Left, x) if x == Direction::Top || x == Direction::Down => new_dirrection,
+            (Direction::Top, x) if x == Direction::Left || x == Direction::Right => new_dirrection,
+            (Direction::Right, x) if x == Direction::Top || x == Direction::Down => new_dirrection,
+            (Direction::Down, x) if x == Direction::Left || x == Direction::Right => new_dirrection,
+            (_, _) => return,
+        }
+    }
 }
 
 impl Drawable for Snake {
