@@ -3,6 +3,7 @@ use std::time::Duration;
 use crate::{
     frame::{Drawable, Frame},
     timer::{self, Timer},
+    NUM_COLS, NUM_ROWS,
 };
 
 const SPEED: u64 = 300;
@@ -11,9 +12,10 @@ pub struct Snake {
     body: Vec<Section>,
     direction: Direction,
     timer: Timer,
+    alive: bool,
 }
 
-enum Direction {
+pub enum Direction {
     Left,
     Top,
     Right,
@@ -36,6 +38,7 @@ impl Snake {
             body,
             direction: Direction::Right,
             timer: Timer::new(Duration::from_millis(SPEED)),
+            alive: true,
         }
     }
 
@@ -49,17 +52,34 @@ impl Snake {
 
     fn next_move(&mut self) {
         let mut new_head_position = self.body[0];
-        match self.direction {
-            Direction::Left => new_head_position.0 -= 1,
-            Direction::Top => new_head_position.1 -= 1,
-            Direction::Right => new_head_position.0 += 1,
-            Direction::Down => new_head_position.1 += 1,
+        self.move_or_dead(&mut new_head_position);
+        if self.is_dead() {
+            return;
         }
+
         self.body.insert(0, new_head_position);
         self.body.pop();
     }
 
-    pub fn turn_left() {}
+    fn move_or_dead(&mut self, next_section: &mut Section) {
+        match self.direction {
+            Direction::Left if next_section.0 > 0 => next_section.0 -= 1,
+            Direction::Left if next_section.0 == 0 => self.alive = false,
+            Direction::Top if next_section.1 > 0 => next_section.1 -= 1,
+            Direction::Top if next_section.1 == 0 => self.alive = false,
+            Direction::Right if next_section.0 < NUM_COLS - 1 => next_section.0 += 1,
+            Direction::Right if next_section.0 == NUM_COLS - 1 => self.alive = false,
+            Direction::Down if next_section.1 < NUM_ROWS - 1 => next_section.1 += 1,
+            Direction::Down if next_section.1 == NUM_ROWS - 1 => self.alive = false,
+            _ => (),
+        };
+    }
+
+    pub fn is_dead(&self) -> bool {
+        !self.alive
+    }
+
+    pub fn turn_if_possible(&self, dirrection: Direction) {}
 }
 
 impl Drawable for Snake {

@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+/// Simple Timer to check if it finished using delta form
+/// main thread instance.
 pub struct Timer {
     total: Duration,
     max: Duration,

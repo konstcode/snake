@@ -69,8 +69,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         snake.update(delta);
+        if snake.is_dead() {
+            audio.play("win");
+            break 'gameloop;
+        }
         snake.draw(&mut curr_frame);
-        render_tx.send(curr_frame);
+        let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
         continue;
     }
