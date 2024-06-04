@@ -2,23 +2,24 @@ use std::time::Duration;
 
 use crate::{
     frame::{Drawable, Frame},
-    timer::{self, Timer},
+    timer::Timer,
     NUM_COLS, NUM_ROWS,
 };
 
-const SPEED: u64 = 300;
+const SPEED: u64 = 500;
 
 pub struct Snake {
     body: Vec<Section>,
     direction: Direction,
     timer: Timer,
     alive: bool,
+    can_turn: bool,
 }
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum Direction {
     Left,
-    Top,
+    Up,
     Right,
     Down,
 }
@@ -40,6 +41,7 @@ impl Snake {
             direction: Direction::Right,
             timer: Timer::new(Duration::from_millis(SPEED)),
             alive: true,
+            can_turn: true,
         }
     }
 
@@ -48,6 +50,7 @@ impl Snake {
         if self.timer.finished() {
             self.timer.reset();
             self.next_move();
+            self.can_turn = true;
         }
     }
 
@@ -66,8 +69,8 @@ impl Snake {
         match self.direction {
             Direction::Left if next_section.0 > 0 => next_section.0 -= 1,
             Direction::Left if next_section.0 == 0 => self.alive = false,
-            Direction::Top if next_section.1 > 0 => next_section.1 -= 1,
-            Direction::Top if next_section.1 == 0 => self.alive = false,
+            Direction::Up if next_section.1 > 0 => next_section.1 -= 1,
+            Direction::Up if next_section.1 == 0 => self.alive = false,
             Direction::Right if next_section.0 < NUM_COLS - 1 => next_section.0 += 1,
             Direction::Right if next_section.0 == NUM_COLS - 1 => self.alive = false,
             Direction::Down if next_section.1 < NUM_ROWS - 1 => next_section.1 += 1,
@@ -80,15 +83,20 @@ impl Snake {
         !self.alive
     }
 
-    // TODO: maybe try to improve this condition
+    //Turn left or rigth relative to current direction, plus
+    //can turn only once a move
     pub fn turn_if_possible(&mut self, new_dirrection: Direction) {
+        if self.can_turn == false {
+            return;
+        }
         self.direction = match (self.direction, new_dirrection) {
-            (Direction::Left, x) if x == Direction::Top || x == Direction::Down => new_dirrection,
-            (Direction::Top, x) if x == Direction::Left || x == Direction::Right => new_dirrection,
-            (Direction::Right, x) if x == Direction::Top || x == Direction::Down => new_dirrection,
+            (Direction::Left, x) if x == Direction::Up || x == Direction::Down => new_dirrection,
+            (Direction::Up, x) if x == Direction::Left || x == Direction::Right => new_dirrection,
+            (Direction::Right, x) if x == Direction::Up || x == Direction::Down => new_dirrection,
             (Direction::Down, x) if x == Direction::Left || x == Direction::Right => new_dirrection,
             (_, _) => return,
-        }
+        };
+        self.can_turn = false;
     }
 }
 
@@ -96,7 +104,7 @@ impl Drawable for Snake {
     fn draw(&self, frame: &mut Frame) {
         let head_char = match self.direction {
             Direction::Left => '⇐',
-            Direction::Top => '⇑',
+            Direction::Up => '⇑',
             Direction::Right => '⇒',
             Direction::Down => '⇓',
         };

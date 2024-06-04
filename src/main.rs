@@ -5,10 +5,10 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use snake::audio::Audio;
 use snake::frame::{new_frame, Drawable, Frame};
 use snake::render;
 use snake::snake::Snake;
+use snake::{audio::Audio, snake::Direction};
 use std::{
     error::Error,
     io,
@@ -63,6 +63,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                         audio.play("win");
                         break 'gameloop;
                     }
+                    KeyCode::Left => snake.turn_if_possible(Direction::Left),
+                    KeyCode::Right => snake.turn_if_possible(Direction::Right),
+                    KeyCode::Up => snake.turn_if_possible(Direction::Up),
+                    KeyCode::Down => snake.turn_if_possible(Direction::Down),
                     _ => {}
                 }
             }
