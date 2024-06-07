@@ -2,29 +2,27 @@ use std::{time::Duration, usize};
 
 use rand::{thread_rng, Rng};
 
-use crate::{frame::Drawable, timer::Timer, NUM_COLS, NUM_ROWS};
+use crate::{frame::Drawable, timer::Timer, Point, NUM_COLS, NUM_ROWS};
 
 const MIN_APPEAR_TIME: usize = 5;
 const MAX_APPEAR_TIME: usize = 10;
 
 struct Apple {
-    x: usize,
-    y: usize,
+    place: Point,
     timer: Timer,
 }
 
-struct AppleDispencer {
+pub struct AppleDispencer {
     deployed: Vec<Apple>,
     max_count: usize,
 }
 
 impl Apple {
-    fn new(x: usize, y: usize) -> Self {
+    fn new(place: Point) -> Self {
         let mut rng = thread_rng();
         let rand_time = rng.gen_range(MIN_APPEAR_TIME..=MAX_APPEAR_TIME);
         Self {
-            x,
-            y,
+            place,
             timer: Timer::new(Duration::from_secs(rand_time as u64)),
         }
     }
@@ -40,7 +38,7 @@ impl Apple {
 
 impl Drawable for Apple {
     fn draw(&self, frame: &mut crate::frame::Frame) {
-        frame[self.x][self.y] = 'Q';
+        frame[self.place.x][self.place.y] = 'Q';
     }
 }
 
@@ -65,7 +63,7 @@ impl AppleDispencer {
         let mut rng = thread_rng();
         let rand_x = rng.gen_range(0..NUM_COLS);
         let rand_y = rng.gen_range(0..NUM_ROWS);
-        let apple = Apple::new(rand_x, rand_y);
+        let apple = Apple::new(Point::new(rand_x, rand_y));
         self.deployed.push(apple);
     }
 }
