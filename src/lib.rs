@@ -6,7 +6,7 @@ pub mod snake;
 pub mod timer;
 
 pub const NUM_ROWS: usize = 30;
-pub const NUM_COLS: usize = 50;
+pub const NUM_COLS: usize = 30;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Point {
@@ -19,4 +19,3 @@ impl Point {
         Self { x, y }
     }
 }
-

@@ -21,6 +21,7 @@ use std::{
 };
 
 static AUDIO_DIR: &str = "audio";
+const MAX_APPLES: usize = 3;
 
 fn render_screen(render_rx: Receiver<Frame>) {
     let mut last_frame = new_frame();
@@ -51,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Gameloop
     let mut instant = Instant::now();
     let mut snake = Snake::new();
-    let mut apple_dispencer = AppleDispencer::new(1);
+    let mut apple_dispencer = AppleDispencer::new(MAX_APPLES);
 
     'gameloop: loop {
         // Per-frame init
