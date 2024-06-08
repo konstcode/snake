@@ -5,9 +5,12 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use snake::frame::{new_frame, Drawable, Frame};
 use snake::render;
 use snake::snake::Snake;
+use snake::{
+    apple::AppleDispencer,
+    frame::{new_frame, Drawable, Frame},
+};
 use snake::{audio::Audio, snake::Direction};
 use std::{
     error::Error,
@@ -48,6 +51,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Gameloop
     let mut instant = Instant::now();
     let mut snake = Snake::new();
+    let mut apple_dispencer = AppleDispencer::new(1);
 
     'gameloop: loop {
         // Per-frame init
@@ -73,11 +77,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         snake.update(delta);
+        apple_dispencer.update(delta);
+        snake.check_if_ate_apple(&mut apple_dispencer);
         if snake.is_dead() {
             audio.play("win");
             break 'gameloop;
         }
         snake.draw(&mut curr_frame);
+        apple_dispencer.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
         continue;

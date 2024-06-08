@@ -7,7 +7,7 @@ use crate::{
     Point, NUM_COLS, NUM_ROWS,
 };
 
-const SPEED: u64 = 500;
+const SPEED: u64 = 300;
 
 pub struct Snake {
     body: Vec<Point>,
@@ -15,6 +15,7 @@ pub struct Snake {
     timer: Timer,
     alive: bool,
     can_turn: bool,
+    adding_tail: bool,
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -40,6 +41,7 @@ impl Snake {
             timer: Timer::new(Duration::from_millis(SPEED)),
             alive: true,
             can_turn: true,
+            adding_tail: false,
         }
     }
     pub fn update(&mut self, delta: Duration) {
@@ -58,7 +60,11 @@ impl Snake {
         }
 
         self.body.insert(0, new_head_position);
-        self.body.pop();
+        if self.adding_tail == true {
+            self.adding_tail = false;
+        } else {
+            self.body.pop();
+        }
     }
     fn move_or_dead(&mut self, next_section: &mut Point) {
         match self.direction {
@@ -91,9 +97,15 @@ impl Snake {
         };
         self.can_turn = false;
     }
-    pub fn check_if_ate_apple(&mut self, &mut dispencer: AppleDispencer) {
-        for snake_part in self.body {
-            snake_part.x
+    pub fn check_if_ate_apple(&mut self, dispencer: &mut AppleDispencer) {
+        for snake_part in &self.body {
+            dispencer.eat_apples_if(|p| {
+                if p == snake_part {
+                    self.adding_tail = true;
+                    return true;
+                }
+                return false;
+            });
         }
     }
 }
@@ -113,4 +125,3 @@ impl Drawable for Snake {
         }
     }
 }
-

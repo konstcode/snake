@@ -4,9 +4,10 @@ use rand::{thread_rng, Rng};
 
 use crate::{frame::Drawable, timer::Timer, Point, NUM_COLS, NUM_ROWS};
 
-const MIN_APPEAR_TIME: usize = 5;
-const MAX_APPEAR_TIME: usize = 10;
+const MIN_APPEAR_TIME: usize = 10;
+const MAX_APPEAR_TIME: usize = 20;
 
+#[derive(Clone, Copy)]
 struct Apple {
     place: Point,
     timer: Timer,
@@ -34,6 +35,9 @@ impl Apple {
         }
         false
     }
+    pub fn get_position(&self) -> Point {
+        self.place
+    }
 }
 
 impl Drawable for Apple {
@@ -50,15 +54,19 @@ impl AppleDispencer {
             deployed,
         }
     }
-
     pub fn update(&mut self, delta: Duration) {
         if self.deployed.len() < self.max_count {
             self.deploy();
         }
         self.deployed
-            .retain_mut(|apple| apple.timer_update_check(delta));
+            .retain_mut(|apple| !apple.timer_update_check(delta));
     }
-
+    pub fn eat_apples_if<F>(&mut self, mut condition: F)
+    where
+        F: FnMut(&Point) -> bool,
+    {
+        self.deployed.retain(|p| !condition(&p.get_position()));
+    }
     fn deploy(&mut self) {
         let mut rng = thread_rng();
         let rand_x = rng.gen_range(0..NUM_COLS);

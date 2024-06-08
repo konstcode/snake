@@ -2,6 +2,7 @@ use std::time::Duration;
 
 /// Simple Timer to check if it finished using delta form
 /// main thread instance.
+#[derive(Clone, Copy)]
 pub struct Timer {
     total: Duration,
     max: Duration,
