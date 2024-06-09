@@ -67,17 +67,37 @@ impl Snake {
         }
     }
     fn move_or_dead(&mut self, next_section: &mut Point) {
+        if self.is_boarder_next(next_section) {
+            self.alive = false;
+            return;
+        }
         match self.direction {
-            Direction::Left if next_section.x > 0 => next_section.x -= 1,
-            Direction::Left if next_section.x == 0 => self.alive = false,
-            Direction::Up if next_section.y > 0 => next_section.y -= 1,
-            Direction::Up if next_section.y == 0 => self.alive = false,
-            Direction::Right if next_section.x < NUM_COLS - 1 => next_section.x += 1,
-            Direction::Right if next_section.x == NUM_COLS - 1 => self.alive = false,
-            Direction::Down if next_section.y < NUM_ROWS - 1 => next_section.y += 1,
-            Direction::Down if next_section.y == NUM_ROWS - 1 => self.alive = false,
-            _ => (),
+            Direction::Left => next_section.x -= 1,
+            Direction::Up => next_section.y -= 1,
+            Direction::Right => next_section.x += 1,
+            Direction::Down => next_section.y += 1,
         };
+        if self.is_tail_next(next_section) {
+            self.alive = false;
+            return;
+        }
+    }
+    fn is_boarder_next(&self, next_section: &mut Point) -> bool {
+        match (self.direction, next_section) {
+            (Direction::Left, Point { x: 0, .. }) => true,
+            (Direction::Up, Point { y: 0, .. }) => true,
+            (Direction::Right, Point { x, .. }) if *x == NUM_COLS - 1 => true,
+            (Direction::Down, Point { y, .. }) if *y == NUM_ROWS - 1 => true,
+            _ => false,
+        }
+    }
+    fn is_tail_next(&self, next_section: &mut Point) -> bool {
+        for p in &self.body {
+            if *p == *next_section {
+                return true;
+            }
+        }
+        false
     }
     pub fn is_dead(&self) -> bool {
         !self.alive

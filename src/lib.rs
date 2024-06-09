@@ -8,7 +8,7 @@ pub mod timer;
 pub const NUM_ROWS: usize = 30;
 pub const NUM_COLS: usize = 30;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
