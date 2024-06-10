@@ -117,16 +117,23 @@ impl Snake {
         };
         self.can_turn = false;
     }
-    pub fn check_if_ate_apple(&mut self, dispencer: &mut AppleDispencer) {
+    pub fn check_if_ate_apple<W>(&mut self, dispencer: &mut AppleDispencer, mut do_if_ate: W)
+    where
+        W: FnMut(),
+    {
         for snake_part in &self.body {
             dispencer.eat_apples_if(|p| {
                 if p == snake_part {
                     self.adding_tail = true;
+                    do_if_ate();
                     return true;
                 }
                 return false;
             });
         }
+    }
+    pub fn is_growing(&self) -> bool {
+        self.adding_tail
     }
 }
 

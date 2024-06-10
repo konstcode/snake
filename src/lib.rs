@@ -4,6 +4,7 @@ pub mod frame;
 pub mod render;
 pub mod snake;
 pub mod timer;
+pub mod topbar;
 
 pub const NUM_ROWS: usize = 30;
 pub const NUM_COLS: usize = 30;

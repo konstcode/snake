@@ -5,13 +5,13 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use snake::render;
 use snake::snake::Snake;
 use snake::{
     apple::AppleDispencer,
     frame::{new_frame, Drawable, Frame},
 };
 use snake::{audio::Audio, snake::Direction};
+use snake::{render, topbar::TopBar};
 use std::{
     error::Error,
     io,
@@ -53,6 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut instant = Instant::now();
     let mut snake = Snake::new();
     let mut apple_dispencer = AppleDispencer::new(MAX_APPLES);
+    let mut topbar = TopBar::new();
 
     'gameloop: loop {
         // Per-frame init
@@ -79,13 +80,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         snake.update(delta);
         apple_dispencer.update(delta);
-        snake.check_if_ate_apple(&mut apple_dispencer);
+        snake.check_if_ate_apple(&mut apple_dispencer, || topbar.scores());
         if snake.is_dead() {
             audio.play("win");
             break 'gameloop;
         }
-        snake.draw(&mut curr_frame);
-        apple_dispencer.draw(&mut curr_frame);
+
+        let drawables: Vec<&dyn Drawable> = vec![&snake, &apple_dispencer, &topbar];
+        for drawable in drawables {
+            drawable.draw(&mut curr_frame);
+        }
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
         continue;
