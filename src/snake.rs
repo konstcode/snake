@@ -85,7 +85,8 @@ impl Snake {
     fn is_boarder_next(&self, next_section: &mut Point) -> bool {
         match (self.direction, next_section) {
             (Direction::Left, Point { x: 0, .. }) => true,
-            (Direction::Up, Point { y: 0, .. }) => true,
+            //Note: start from 1 to avoid topbar, temporary solution for now
+            (Direction::Up, Point { y: 1, .. }) => true,
             (Direction::Right, Point { x, .. }) if *x == NUM_COLS - 1 => true,
             (Direction::Down, Point { y, .. }) if *y == NUM_ROWS - 1 => true,
             _ => false,

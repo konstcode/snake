@@ -70,7 +70,8 @@ impl AppleDispencer {
     fn deploy(&mut self) {
         let mut rng = thread_rng();
         let rand_x = rng.gen_range(0..NUM_COLS);
-        let rand_y = rng.gen_range(0..NUM_ROWS);
+        //Note: start from 1 to avoid topbar spam, temporary solution for now
+        let rand_y = rng.gen_range(1..NUM_ROWS);
         let apple = Apple::new(Point::new(rand_x, rand_y));
         self.deployed.push(apple);
     }
