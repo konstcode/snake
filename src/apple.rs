@@ -15,7 +15,7 @@ struct Apple {
 
 pub struct AppleDispencer {
     deployed: Vec<Apple>,
-    max_count: usize,
+    max_count: u8,
 }
 
 impl Apple {
@@ -47,7 +47,7 @@ impl Drawable for Apple {
 }
 
 impl AppleDispencer {
-    pub fn new(max_count: usize) -> Self {
+    pub fn new(max_count: u8) -> Self {
         let deployed = Vec::new();
         Self {
             max_count,
@@ -55,7 +55,7 @@ impl AppleDispencer {
         }
     }
     pub fn update(&mut self, delta: Duration) {
-        if self.deployed.len() < self.max_count {
+        if (self.deployed.len() as u8) < self.max_count {
             self.deploy();
         }
         self.deployed

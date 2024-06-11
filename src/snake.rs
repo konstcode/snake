@@ -7,8 +7,6 @@ use crate::{
     Point, NUM_COLS, NUM_ROWS,
 };
 
-const SPEED: u64 = 300;
-
 pub struct Snake {
     body: Vec<Point>,
     direction: Direction,
@@ -27,7 +25,7 @@ pub enum Direction {
 }
 
 impl Snake {
-    pub fn new() -> Self {
+    pub fn new(speed: u64) -> Self {
         let head = Point::new(20, 20);
         let body = vec![
             head,
@@ -38,7 +36,7 @@ impl Snake {
         Self {
             body,
             direction: Direction::Right,
-            timer: Timer::new(Duration::from_millis(SPEED)),
+            timer: Timer::new(Duration::from_millis(speed)),
             alive: true,
             can_turn: true,
             adding_tail: false,

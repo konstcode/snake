@@ -1,6 +1,7 @@
 pub mod apple;
 pub mod audio;
 pub mod frame;
+pub mod menu;
 pub mod render;
 pub mod snake;
 pub mod timer;

@@ -5,12 +5,12 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use snake::snake::Snake;
 use snake::{
     apple::AppleDispencer,
     frame::{new_frame, Drawable, Frame},
 };
 use snake::{audio::Audio, snake::Direction};
+use snake::{menu::Menu, snake::Snake};
 use snake::{render, topbar::TopBar};
 use std::{
     error::Error,
@@ -21,7 +21,8 @@ use std::{
 };
 
 static AUDIO_DIR: &str = "audio";
-const MAX_APPLES: usize = 3;
+const MAX_APPLES: u8 = 3;
+const SPEED: u64 = 300;
 
 fn render_screen(render_rx: Receiver<Frame>) {
     let mut last_frame = new_frame();
@@ -51,44 +52,74 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Gameloop
     let mut instant = Instant::now();
-    let mut snake = Snake::new();
-    let mut apple_dispencer = AppleDispencer::new(MAX_APPLES);
-    let mut topbar = TopBar::new();
+    let mut menu = Menu::new(SPEED, MAX_APPLES);
 
-    'gameloop: loop {
+    'menuloop: loop {
         // Per-frame init
-        let delta = instant.elapsed();
-        instant = Instant::now();
         let mut curr_frame = new_frame();
 
-        // Input handlers for the game
+        // Input hadleres for menu
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
-                    KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("win");
-                        break 'gameloop;
+                    KeyCode::Enter => {
+                        menu.active = false;
+                        render::render(&mut stdout, &curr_frame, &curr_frame, true);
                     }
-                    KeyCode::Left => snake.turn_if_possible(Direction::Left),
-                    KeyCode::Right => snake.turn_if_possible(Direction::Right),
-                    KeyCode::Up => snake.turn_if_possible(Direction::Up),
-                    KeyCode::Down => snake.turn_if_possible(Direction::Down),
+                    KeyCode::Esc | KeyCode::Char('q') => {
+                        break 'menuloop;
+                    }
                     _ => {}
                 }
             }
         }
+        menu.draw(&mut curr_frame);
+        if !menu.active {
+            let mut snake = Snake::new(menu);
+            let mut apple_dispencer = AppleDispencer::new(MAX_APPLES);
+            let mut topbar = TopBar::new();
 
-        snake.update(delta);
-        apple_dispencer.update(delta);
-        snake.check_if_ate_apple(&mut apple_dispencer, || topbar.scores());
-        if snake.is_dead() {
-            audio.play("win");
-            break 'gameloop;
-        }
+            'gameloop: loop {
+                let delta = instant.elapsed();
+                instant = Instant::now();
+                curr_frame = new_frame();
 
-        let drawables: Vec<&dyn Drawable> = vec![&snake, &apple_dispencer, &topbar];
-        for drawable in drawables {
-            drawable.draw(&mut curr_frame);
+                // Input handlers for the game
+                while event::poll(Duration::default())? {
+                    if let Event::Key(key_event) = event::read()? {
+                        match key_event.code {
+                            KeyCode::Esc | KeyCode::Char('q') => {
+                                audio.play("win");
+                                menu.active = true;
+                                render::render(&mut stdout, &curr_frame, &curr_frame, true);
+                                break 'gameloop;
+                            }
+                            KeyCode::Left => snake.turn_if_possible(Direction::Left),
+                            KeyCode::Right => snake.turn_if_possible(Direction::Right),
+                            KeyCode::Up => snake.turn_if_possible(Direction::Up),
+                            KeyCode::Down => snake.turn_if_possible(Direction::Down),
+                            _ => {}
+                        }
+                    }
+                }
+
+                snake.update(delta);
+                apple_dispencer.update(delta);
+                snake.check_if_ate_apple(&mut apple_dispencer, || topbar.scores());
+                if snake.is_dead() {
+                    audio.play("win");
+                    break 'gameloop;
+                }
+
+                let drawables: Vec<&dyn Drawable> = vec![&snake, &apple_dispencer, &topbar];
+                for drawable in drawables {
+                    drawable.draw(&mut curr_frame);
+                }
+
+                let _ = render_tx.send(curr_frame);
+                thread::sleep(Duration::from_millis(1));
+                continue;
+            }
         }
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
