@@ -18,6 +18,13 @@ impl TopBar {
     pub fn scores(&mut self) {
         self.score += 1;
     }
+
+    pub fn get_scores(&self) -> usize {
+        self.score
+    }
+    pub fn get_time(&self) -> usize {
+        self.instant.elapsed().as_secs() as usize
+    }
 }
 
 impl Drawable for TopBar {

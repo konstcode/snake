@@ -69,14 +69,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                     KeyCode::Esc | KeyCode::Char('q') => {
                         break 'menuloop;
                     }
+                    KeyCode::Up | KeyCode::Down => menu.switch_current_option(),
+                    KeyCode::Left => menu.decrease_current_option(),
+                    KeyCode::Right => menu.insrease_current_option(),
                     _ => {}
                 }
             }
         }
         menu.draw(&mut curr_frame);
         if !menu.active {
-            let mut snake = Snake::new(menu);
-            let mut apple_dispencer = AppleDispencer::new(MAX_APPLES);
+            let mut snake = Snake::new(menu.speed());
+            let mut apple_dispencer = AppleDispencer::new(menu.apples());
             let mut topbar = TopBar::new();
 
             'gameloop: loop {
@@ -108,6 +111,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 snake.check_if_ate_apple(&mut apple_dispencer, || topbar.scores());
                 if snake.is_dead() {
                     audio.play("win");
+                    menu.get_game_results(topbar.get_scores(), topbar.get_time());
+                    menu.active = true;
                     break 'gameloop;
                 }
 
@@ -122,7 +127,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
         let _ = render_tx.send(curr_frame);
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(10));
         continue;
     }
 
