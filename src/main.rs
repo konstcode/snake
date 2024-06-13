@@ -5,6 +5,7 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
+use rand::{thread_rng, Rng};
 use snake::{
     apple::AppleDispencer,
     frame::{new_frame, Drawable, Frame},
@@ -54,6 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut instant = Instant::now();
     let mut menu = Menu::new(SPEED, MAX_APPLES);
 
+    audio.play("enter");
     'menuloop: loop {
         // Per-frame init
         let mut curr_frame = new_frame();
@@ -92,7 +94,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if let Event::Key(key_event) = event::read()? {
                         match key_event.code {
                             KeyCode::Esc | KeyCode::Char('q') => {
-                                audio.play("win");
+                                audio.play("lose_sound");
                                 menu.active = true;
                                 render::render(&mut stdout, &curr_frame, &curr_frame, true);
                                 break 'gameloop;
@@ -108,9 +110,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 snake.update(delta);
                 apple_dispencer.update(delta);
-                snake.check_if_ate_apple(&mut apple_dispencer, || topbar.scores());
+                snake.check_if_ate_apple(&mut apple_dispencer, || {
+                    topbar.scores();
+                    let mut rng = thread_rng();
+                    if rng.gen() {
+                        audio.play("hrum");
+                    } else {
+                        audio.play("niam");
+                    }
+                });
                 if snake.is_dead() {
-                    audio.play("win");
+                    audio.play("lose_sound");
                     menu.get_game_results(topbar.get_scores(), topbar.get_time());
                     menu.active = true;
                     break 'gameloop;
