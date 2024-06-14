@@ -3,8 +3,12 @@ name = "snake"
 version = "0.1.0"
 edition = "2021"
 
+# Include the assets directory
+include = ["src/**", "audio/**", "Cargo.toml"]
+
 [dependencies]
 crossterm = "0.27.0"
 log = "0.4.21"
 rand = "0.8.5"
 rodio = "0.18.0"
+
