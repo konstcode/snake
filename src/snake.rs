@@ -42,11 +42,15 @@ impl Snake {
             adding_tail: false,
         }
     }
-    pub fn update(&mut self, delta: Duration) {
+    pub fn update<F>(&mut self, delta: Duration, mut do_if_move: F)
+    where
+        F: FnMut(),
+    {
         self.timer.tick(delta);
         if self.timer.finished() {
             self.timer.reset();
             self.next_move();
+            do_if_move();
             self.can_turn = true;
         }
     }

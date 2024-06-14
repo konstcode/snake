@@ -108,7 +108,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
-                snake.update(delta);
+                snake.update(delta, || audio.play("move"));
                 apple_dispencer.update(delta);
                 snake.check_if_ate_apple(&mut apple_dispencer, || {
                     topbar.scores();
@@ -123,7 +123,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     audio.play("lose_sound");
                     menu.get_game_results(topbar.get_scores(), topbar.get_time());
                     menu.active = true;
-                    break 'gameloop;
+                    continue 'menuloop;
                 }
 
                 let drawables: Vec<&dyn Drawable> = vec![&snake, &apple_dispencer, &topbar];
