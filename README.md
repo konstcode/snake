@@ -1,5 +1,7 @@
 Classic snake game is terminal based, open source, inspired by [invaders](https://github.com/CleanCut/invaders), to get some Rust practice and 
 some basic game dev experience.
+![Gameplay](https://github.com/konstcode/snake/blob/main/assets/gameplay.gif)
+![Menu](https://github.com/konstcode/snake/blob/main/assets/menu.png)
 
 ### Dependencies on Linux
 
