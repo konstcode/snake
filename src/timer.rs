@@ -1,7 +1,9 @@
 use std::time::Duration;
 
-/// Simple Timer to check if it finished using delta form
-/// main thread instance.
+///I use simple timer concept where we have took instant time
+///each cycle and send delta of time that pass to each Timer
+///object that saves it. And when next it current saved time goes more
+///then max/set time for timer - it is marked as finished.
 #[derive(Clone, Copy)]
 pub struct Timer {
     total: Duration,

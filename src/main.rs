@@ -1,3 +1,8 @@
+///In **snake** I use two loops for each screen with different key
+///managements functionality. It was OK because of simplicity of
+///application but in more complex I think better to use some Screen
+///base element and specify traits for it, for example event handling, drawing.
+///And in main and only one loop manage switching between them.
 use crossterm::{
     cursor::{Hide, Show},
     event,
