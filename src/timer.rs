@@ -22,9 +22,8 @@ impl Timer {
 
     pub fn tick(&mut self, time: Duration) {
         self.total += time;
-        match self.total >= self.max {
-            true => self.finished = true,
-            _ => (),
+        if self.total >= self.max {
+            self.finished = true;
         };
     }
 
